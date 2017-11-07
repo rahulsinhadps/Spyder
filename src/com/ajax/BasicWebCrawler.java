@@ -17,24 +17,23 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.HashSet;
-import java.util.Set;
 
 
-public class BasicWebCrawler {
+public final class BasicWebCrawler {
 
-    private HashSet<String> links;
-    private HashSet<String> categoriesVisited;
-    private HashSet<String> categoryListPages;
-    private HashSet<String> categoryPages;
-    private HashSet<String> productFamilyPages;
-    private HashSet<String> productDetailsPages;
-    private HashSet<String> counterBookPages;
-    private HashSet<String> productListPages;
+    private final HashSet<String> links;
+    private final HashSet<String> categoriesVisited;
+    private final HashSet<String> categoryListPages;
+    private final HashSet<String> categoryPages;
+    private final HashSet<String> productFamilyPages;
+    private final HashSet<String> productDetailsPages;
+    private final HashSet<String> counterBookPages;
+    private final HashSet<String> productListPages;
     private static int resultSize;
-    private long startTime;
+    private final long startTime;
     private static String outputFileName;
 
-    public BasicWebCrawler() {
+    private BasicWebCrawler() {
         links = new HashSet<>();
         categoriesVisited = new HashSet<>();
         categoryListPages = new HashSet<>();
@@ -61,7 +60,7 @@ public class BasicWebCrawler {
         }
     }
 
-    public void getPageLinks(final String url) {
+    private final void getPageLinks(final String url) {
         if (!links.contains(url)) {
             try {
                 addToPageListForRelevantResultType(url);
@@ -82,7 +81,6 @@ public class BasicWebCrawler {
                             && !page.attr("abs:href").contains("footer")) {
                         String[] urlArray = page.attr("abs:href").split("/");
                         final String categoryIdWithReqParams = urlArray[urlArray.length - 1];
-                        final int reqParamsIndex = categoryIdWithReqParams.indexOf('?');
                         String categoryId = categoryIdWithReqParams;
                         categoryId = categoryId.contains("#")
                                 ? categoryId.substring(0, categoryId.length() - 1)
@@ -154,8 +152,8 @@ public class BasicWebCrawler {
     }
 
 
-    private void printPageType(final HashSet<String> pageList,
-                               final BufferedWriter bw) throws IOException {
+    private static void printPageType(final HashSet<String> pageList,
+                                      final BufferedWriter bw) throws IOException {
         bw.newLine();
         pageList.forEach(page -> {
             try {
@@ -194,6 +192,7 @@ public class BasicWebCrawler {
             sc.init(null, trustAllCerts, new SecureRandom());
             HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            System.err.println(e.getMessage());
         }
     }
 }
