@@ -5,8 +5,8 @@
     <groupId>com.ajax</groupId>
     <artifactId>first_spyder</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>sauce_appium_junit</name>
-    <description>Sample Appium tests using JUnit</description>
+    <name>first_spyder</name>
+    <description>Sample Spyder</description>
     <dependencies>
         <dependency>
             <groupId>org.jsoup</groupId>
@@ -14,6 +14,18 @@
             <version>1.10.2</version>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 
 </project>
