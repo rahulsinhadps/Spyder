@@ -12,8 +12,6 @@ import javax.net.ssl.X509TrustManager;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -27,12 +25,14 @@ public class BasicWebCrawler {
     private HashSet<String> links;
     private HashSet<String> categoriesVisited;
     private Set<String> categoryListPages;
+    private Set<String> categoryPages;
     private Set<String> productFamilyPages;
     private Set<String> productDetailsPages;
     private Set<String> counterBookPages;
     private Set<String> productListPages;
-    private int resultSize;
+    private static int resultSize;
     private long startTime;
+    private static String outputFileName;
 
     public BasicWebCrawler() {
         links = new HashSet<>();
@@ -42,15 +42,19 @@ public class BasicWebCrawler {
         productFamilyPages = new HashSet<>();
         counterBookPages = new HashSet<>();
         productListPages = new HashSet<>();
-        resultSize = 5;
+        categoryPages = new HashSet<>();
         startTime = System.currentTimeMillis();
     }
 
 
     public static void main(String[] args) {
-        final String url = "https://www.fastenal.ca/";
-        disableCertificateCheck(url);
-        new BasicWebCrawler().getPageLinks(url);
+        if(args.length == 3) {
+            final String url = args[0];
+            outputFileName = args[1] + ".txt";
+            resultSize = Integer.parseInt(args[2]);
+            disableCertificateCheck();
+            new BasicWebCrawler().getPageLinks(url);
+        }
     }
 
     public void getPageLinks(final String url) {
@@ -70,10 +74,20 @@ public class BasicWebCrawler {
                 Elements linksOnPage = document.select("a[href]");
 
                 for (final Element page : linksOnPage) {
-                    if (page.attr("abs:href").contains("fastenal.ca")) {
+                    if (page.attr("abs:href").contains("fastenal.ca")
+                            && !page.attr("abs:href").contains("footer")) {
                         String[] urlArray = page.attr("abs:href").split("/");
-                        if (!categoriesVisited.contains(urlArray[urlArray.length - 1])) {
-                            categoriesVisited.add(urlArray[urlArray.length - 1]);
+                        final String categoryIdWithReqParams = urlArray[urlArray.length - 1];
+                        final int reqParamsIndex = categoryIdWithReqParams.indexOf('?');
+                        String categoryId = reqParamsIndex != -1
+                                ? categoryIdWithReqParams.substring(0, categoryIdWithReqParams.indexOf('?'))
+                                : categoryIdWithReqParams;
+                        categoryId = categoryIdWithReqParams;
+                        categoryId = categoryId.contains("#")
+                                ? categoryId.substring(0, categoryId.length() - 1)
+                                : categoryId;
+                        if (!categoriesVisited.contains(categoryId)) {
+                            categoriesVisited.add(categoryId);
                             getPageLinks(page.attr("abs:href"));
                         }
                     }
@@ -95,11 +109,24 @@ public class BasicWebCrawler {
             productDetailsPages.add(url);
         } else if (url.contains("productList") && productListPages.size() < resultSize) {
             productListPages.add(url);
+        } else if (url.contains("category") && (categoryPages.size() < resultSize)) {
+            categoryPages.add(url);
         }
     }
 
+
+    private boolean areAllCategoriesFound() {
+        final boolean productPagesFound = productDetailsPages.size() >= resultSize
+                && counterBookPages.size() >= resultSize
+                && productListPages.size() >= resultSize;
+        final boolean categoryPagesFound = categoryListPages.size() >= resultSize
+                && productFamilyPages.size() >= resultSize
+                && categoryPages.size() >= resultSize;
+        return (productPagesFound && categoryPagesFound);
+    }
+
     private void printPageLinks() {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter("URLs.txt", true))) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(outputFileName, true))) {
             bw.write("Product Details Pages");
             bw.newLine();
             productDetailsPages.forEach(page -> {
@@ -158,9 +185,23 @@ public class BasicWebCrawler {
                     ex.printStackTrace();
                 }
             });
+            bw.write("----------------------");
+            bw.newLine();
+            bw.write("Category Pages");
+            bw.newLine();
+            categoryPages.forEach(page -> {
+                try {
+                    bw.write(page);
+                    bw.newLine();
+                } catch (final IOException ex) {
+                    ex.printStackTrace();
+                }
+            });
+            final String totalTimeTaken = (System.currentTimeMillis() - startTime)/1000 + " seconds";
+            System.out.println(totalTimeTaken);
             bw.write("----------------");
             bw.newLine();
-            bw.write("Total time taken: " + (System.currentTimeMillis() - startTime)/1000 + "seconds");
+            bw.write("Total time taken: " + totalTimeTaken);
             bw.newLine();
 
 
@@ -169,12 +210,11 @@ public class BasicWebCrawler {
             e.printStackTrace();
 
         }
-
         System.exit(0);
     }
 
-    private static void disableCertificateCheck(final String urlString) {
-        // Create a trust manager that does not validate certificate chains
+
+    private static void disableCertificateCheck() {
         TrustManager[] trustAllCerts = new TrustManager[]{
                 new X509TrustManager() {
                     public X509Certificate[] getAcceptedIssuers() {
@@ -193,20 +233,11 @@ public class BasicWebCrawler {
                 }
         };
 
-// Install the all-trusting trust manager
         try {
             SSLContext sc = SSLContext.getInstance("SSL");
             sc.init(null, trustAllCerts, new SecureRandom());
             HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
         }
-    }
-
-    private boolean areAllCategoriesFound() {
-        final boolean productPagesFound = productDetailsPages.size() >= resultSize
-                && counterBookPages.size() >= resultSize
-                && productListPages.size() >= resultSize;
-        final boolean categoryPagesFound = categoryListPages.size() >= resultSize && productFamilyPages.size() >= resultSize;
-        return (productPagesFound && categoryPagesFound);
     }
 }
