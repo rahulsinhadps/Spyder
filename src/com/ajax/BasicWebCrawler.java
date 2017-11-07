@@ -48,10 +48,10 @@ public class BasicWebCrawler {
 
 
     public static void main(String[] args) {
-        //Program arguments would be something like : https://www.fastenal.ca/ PRD-URLs 1
-        // arg[0]  would have URL to crawl.
-        // arg[1] would have file name to write
-        // arg[2] would have the number of samples to pick up.
+        /*Program arguments would be something like : https://www.fastenal.ca/ PRD-URLs 1
+         arg[0]  would have URL to crawl.
+         arg[1] would have file name to write
+         arg[2] would have the number of samples to pick up.*/
         if(args.length == 3) {
             final String url = args[0];
             outputFileName = args[1] + ".txt";
@@ -64,7 +64,7 @@ public class BasicWebCrawler {
     public void getPageLinks(final String url) {
         if (!links.contains(url)) {
             try {
-                setCategoryBooleanForResultType(url);
+                addToPageListForRelevantResultType(url);
                 links.add(url);
 
                 System.out.println(url);
@@ -99,7 +99,7 @@ public class BasicWebCrawler {
         }
     }
 
-    private void setCategoryBooleanForResultType(final String url) {
+    private void addToPageListForRelevantResultType(final String url) {
         if (url.contains("productFamily") && (productFamilyPages.size() < resultSize)) {
             productFamilyPages.add(url);
         } else if (url.contains("categoryList") && (categoryListPages.size() < resultSize)) {
@@ -147,7 +147,6 @@ public class BasicWebCrawler {
             bw.write("Total time taken: " + totalTimeTaken);
             bw.newLine();
         } catch (final IOException e) {
-
             e.printStackTrace();
 
         }
