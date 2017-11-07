@@ -3,10 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ajax</groupId>
-    <artifactId>first_spyder</artifactId>
+    <artifactId>spyder</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>first_spyder</name>
-    <description>Sample Spyder</description>
+    <name>spyder</name>
+    <description>Simple Web Spider</description>
     <dependencies>
         <dependency>
             <groupId>org.jsoup</groupId>

@@ -24,12 +24,12 @@ public class BasicWebCrawler {
 
     private HashSet<String> links;
     private HashSet<String> categoriesVisited;
-    private Set<String> categoryListPages;
-    private Set<String> categoryPages;
-    private Set<String> productFamilyPages;
-    private Set<String> productDetailsPages;
-    private Set<String> counterBookPages;
-    private Set<String> productListPages;
+    private HashSet<String> categoryListPages;
+    private HashSet<String> categoryPages;
+    private HashSet<String> productFamilyPages;
+    private HashSet<String> productDetailsPages;
+    private HashSet<String> counterBookPages;
+    private HashSet<String> productListPages;
     private static int resultSize;
     private long startTime;
     private static String outputFileName;
@@ -48,6 +48,10 @@ public class BasicWebCrawler {
 
 
     public static void main(String[] args) {
+        //Program arguments would be something like : https://www.fastenal.ca/ PRD-URLs 1
+        // arg[0]  would have URL to crawl.
+        // arg[1] would have file name to write
+        // arg[2] would have the number of samples to pick up.
         if(args.length == 3) {
             final String url = args[0];
             outputFileName = args[1] + ".txt";
@@ -79,10 +83,7 @@ public class BasicWebCrawler {
                         String[] urlArray = page.attr("abs:href").split("/");
                         final String categoryIdWithReqParams = urlArray[urlArray.length - 1];
                         final int reqParamsIndex = categoryIdWithReqParams.indexOf('?');
-                        String categoryId = reqParamsIndex != -1
-                                ? categoryIdWithReqParams.substring(0, categoryIdWithReqParams.indexOf('?'))
-                                : categoryIdWithReqParams;
-                        categoryId = categoryIdWithReqParams;
+                        String categoryId = categoryIdWithReqParams;
                         categoryId = categoryId.contains("#")
                                 ? categoryId.substring(0, categoryId.length() - 1)
                                 : categoryId;
@@ -128,89 +129,45 @@ public class BasicWebCrawler {
     private void printPageLinks() {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(outputFileName, true))) {
             bw.write("Product Details Pages");
-            bw.newLine();
-            productDetailsPages.forEach(page -> {
-                try {
-                    bw.write(page);
-                    bw.newLine();
-                } catch (final IOException ex) {
-                    ex.printStackTrace();
-                }
-            });
-            bw.write("--------------------------");
-            bw.newLine();
+            printPageType(productDetailsPages, bw);
             bw.write("Product Family Pages");
-            bw.newLine();
-            productFamilyPages.forEach(page -> {
-                try {
-                    bw.write(page);
-                    bw.newLine();
-                } catch (final IOException ex) {
-                    ex.printStackTrace();
-                }
-            });
-            bw.write("-------------------------");
-            bw.newLine();
+            printPageType(productFamilyPages, bw);
             bw.write("Category List Pages");
-            bw.newLine();
-            categoryListPages.forEach(page -> {
-                try {
-                    bw.write(page);
-                    bw.newLine();
-                } catch (final IOException ex) {
-                    ex.printStackTrace();
-                }
-            });
-            bw.write("----------------------");
-            bw.newLine();
+            printPageType(categoryListPages, bw);
             bw.write("Counterbook Pages");
-            bw.newLine();
-            counterBookPages.forEach(page -> {
-                try {
-                    bw.write(page);
-                    bw.newLine();
-                } catch (final IOException ex) {
-                    ex.printStackTrace();
-                }
-            });
-            bw.write("----------------------");
-            bw.newLine();
+            printPageType(counterBookPages, bw);
             bw.write("Product List Pages");
-            bw.newLine();
-            productListPages.forEach(page -> {
-                try {
-                    bw.write(page);
-                    bw.newLine();
-                } catch (final IOException ex) {
-                    ex.printStackTrace();
-                }
-            });
-            bw.write("----------------------");
-            bw.newLine();
+            printPageType(productListPages, bw);
             bw.write("Category Pages");
-            bw.newLine();
-            categoryPages.forEach(page -> {
-                try {
-                    bw.write(page);
-                    bw.newLine();
-                } catch (final IOException ex) {
-                    ex.printStackTrace();
-                }
-            });
+            printPageType(categoryPages, bw);
             final String totalTimeTaken = (System.currentTimeMillis() - startTime)/1000 + " seconds";
             System.out.println(totalTimeTaken);
             bw.write("----------------");
             bw.newLine();
             bw.write("Total time taken: " + totalTimeTaken);
             bw.newLine();
-
-
         } catch (final IOException e) {
 
             e.printStackTrace();
 
         }
         System.exit(0);
+    }
+
+
+    private void printPageType(final HashSet<String> pageList,
+                               final BufferedWriter bw) throws IOException {
+        bw.newLine();
+        pageList.forEach(page -> {
+            try {
+                bw.write(page);
+                bw.newLine();
+            } catch (final IOException ex) {
+                ex.printStackTrace();
+            }
+        });
+        bw.write("----------------");
+        bw.newLine();
     }
 
 
